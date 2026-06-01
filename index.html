@@ -540,6 +540,7 @@
     .swimlane-header.thisyear  { color: #2d8a4e; background: #f0faf3; border-left: 3px solid #2d8a4e; }
     .swimlane-header.nextyear  { color: #1a5bbf; background: #f0f4ff; border-left: 3px solid #1a5bbf; }
     .swimlane-header.window    { color: #b85000; background: #fff8f0; border-left: 3px solid #b85000; }
+    .swimlane-header.later     { color: #7b3fbe; background: #f8f0ff; border-left: 3px solid #7b3fbe; }
     .swimlane-header.unassigned { color: var(--text-muted); background: var(--surface-2); border-left: 3px solid var(--border); }
     .swimlane-body { padding: 10px; display: flex; flex-direction: column; gap: 8px; min-height: 60px; }
     .swimlane-empty { font-size: 12px; color: var(--text-placeholder); text-align: center; padding: 16px 8px; font-style: italic; }
@@ -1353,7 +1354,7 @@
       const panel = document.getElementById('roadmap-panel');
       const items = state.roadmapItems || [];
 
-      const phases = [['thisyear', 'This Year'], ['nextyear', 'Next Year'], ['window', 'Within Window'], ['', 'Unassigned']];
+      const phases = [['thisyear', 'This Year'], ['nextyear', 'Next Year'], ['window', 'Within Window'], ['later', 'Later'], ['', 'Unassigned']];
       const swimHtml = phases.map(([phase, label]) => {
         const phaseItems = items.filter(i => (i.phase || '') === phase);
         const cls = phase || 'unassigned';
