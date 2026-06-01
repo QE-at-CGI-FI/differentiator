@@ -580,6 +580,20 @@
     }
     .roadmap-card-title-input::placeholder { color: var(--text-placeholder); font-weight: 400; }
     .roadmap-card-title-input:focus { background: var(--surface); }
+    .btn-offer-star {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 15px;
+      line-height: 1;
+      padding: 2px 3px;
+      border-radius: 3px;
+      flex-shrink: 0;
+      color: #cccccc;
+      transition: color 0.15s;
+    }
+    .btn-offer-star:hover { color: #f0a500; }
+    .btn-offer-star.active { color: #f0a500; }
     .roadmap-card-desc-input {
       width: 100%;
       font-size: 11px;
@@ -1273,7 +1287,7 @@
 
     function addRoadmapItem(phase) {
       if (!state.roadmapItems) state.roadmapItems = [];
-      state.roadmapItems.push({ id: uid(), title: '', description: '', scope: '', effort: null, value: null, phase: phase || '' });
+      state.roadmapItems.push({ id: uid(), title: '', description: '', scope: '', effort: null, value: null, phase: phase || '', offerMade: false });
       saveState();
       renderRoadmap();
     }
@@ -1294,6 +1308,14 @@
       if (item) { item.description = val; saveState(); }
     }
 
+    function toggleOfferMade(id) {
+      const item = (state.roadmapItems || []).find(i => i.id === id);
+      if (!item) return;
+      item.offerMade = !item.offerMade;
+      saveState();
+      renderRoadmap();
+    }
+
     // ── Roadmap field setters ──
 
     function setEffort(itemId, effort) {
@@ -1311,6 +1333,7 @@
       return `<div class="roadmap-card" draggable="true" data-item-id="${item.id}">
           <div class="roadmap-card-header">
             <textarea class="roadmap-card-title-input" placeholder="Item title" rows="2" oninput="updateRoadmapItemTitle('${item.id}', this.value); this.style.height='auto'; this.style.height=this.scrollHeight+'px'">${escHtml(item.title || '')}</textarea>
+            <button class="btn-offer-star${item.offerMade ? ' active' : ''}" onclick="toggleOfferMade('${item.id}')" title="${item.offerMade ? 'Offer made' : 'Mark offer made'}">${item.offerMade ? '★' : '☆'}</button>
             <button class="btn-icon danger" onclick="deleteRoadmapItem('${item.id}')" title="Delete item">✕</button>
           </div>
           <textarea class="roadmap-card-desc-input" placeholder="Description…" rows="2" oninput="updateRoadmapItemDesc('${item.id}', this.value); this.style.height='auto'; this.style.height=this.scrollHeight+'px'">${escHtml(item.description || '')}</textarea>
