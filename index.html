@@ -323,7 +323,7 @@
 
     .question-item {
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       gap: 2px;
       margin-bottom: 2px;
     }
@@ -339,6 +339,10 @@
       border-radius: 3px;
       font-family: inherit;
       min-width: 0;
+      resize: none;
+      overflow: hidden;
+      display: block;
+      line-height: 1.4;
     }
     .question-input::placeholder { color: var(--text-placeholder); font-style: italic; }
     .question-input:focus { background: var(--surface-2); }
@@ -883,13 +887,13 @@
           <div class="questions-panel-label">Questions</div>
           ${(el.questions || []).map((q, i) => `
             <div class="question-item">
-              <input type="text" class="question-input"
+              <textarea class="question-input"
                 placeholder="Driving question…"
-                value="${escAttr(q)}"
+                rows="1"
                 data-element-id="${el.id}"
                 data-field="question"
                 data-question-idx="${i}"
-              />
+              >${escHtml(q)}</textarea>
               <button class="btn-icon danger" onclick="deleteQuestion('${el.id}', ${i})" title="Remove">✕</button>
             </div>
           `).join('')}
@@ -907,7 +911,7 @@
       bindVisionInput();
 
       // Auto-resize textareas
-      document.querySelectorAll('.option-description-input, .vision-input').forEach(ta => {
+      document.querySelectorAll('.option-description-input, .vision-input, .question-input').forEach(ta => {
         autoResize(ta);
         ta.addEventListener('input', () => autoResize(ta));
       });
