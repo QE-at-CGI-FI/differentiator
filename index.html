@@ -559,7 +559,9 @@
     }
     .roadmap-card:active { cursor: grabbing; }
     .roadmap-card.dragging { opacity: 0.35; }
-    .swimlane-col.drop-target > .swimlane-body { outline: 2px dashed var(--cgi-red); outline-offset: -3px; border-radius: 4px; }
+    .roadmap-card.drag-over-top    { box-shadow: 0 -3px 0 0 var(--cgi-red); }
+    .roadmap-card.drag-over-bottom { box-shadow: 0 3px 0 0 var(--cgi-red); }
+    .swimlane-body.drop-target-empty { outline: 2px dashed var(--cgi-red); outline-offset: -3px; border-radius: 4px; }
     .roadmap-card-header {
       display: flex;
       align-items: center;
@@ -1373,10 +1375,14 @@
 
     let _rdDragId = null;
 
+    function _rdClearIndicators() {
+      document.querySelectorAll('.roadmap-card').forEach(c => c.classList.remove('drag-over-top', 'drag-over-bottom'));
+      document.querySelectorAll('.swimlane-body').forEach(b => b.classList.remove('drop-target-empty'));
+    }
+
     function setupRoadmapDragDrop() {
       document.querySelectorAll('.roadmap-card').forEach(card => {
         card.addEventListener('dragstart', e => {
-          // Don't start drag if user is interacting with textarea or input
           if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON') {
             e.preventDefault();
             return;
@@ -1386,31 +1392,77 @@
           e.dataTransfer.setData('text/plain', _rdDragId);
           setTimeout(() => card.classList.add('dragging'), 0);
         });
+
         card.addEventListener('dragend', () => {
           card.classList.remove('dragging');
-          document.querySelectorAll('.swimlane-col').forEach(c => c.classList.remove('drop-target'));
+          _rdClearIndicators();
           _rdDragId = null;
+        });
+
+        card.addEventListener('dragover', e => {
+          if (!_rdDragId || card.dataset.itemId === _rdDragId) return;
+          e.preventDefault();
+          e.stopPropagation();
+          _rdClearIndicators();
+          const rect = card.getBoundingClientRect();
+          if (e.clientY < rect.top + rect.height / 2) {
+            card.classList.add('drag-over-top');
+          } else {
+            card.classList.add('drag-over-bottom');
+          }
+        });
+
+        card.addEventListener('dragleave', e => {
+          if (!card.contains(e.relatedTarget)) {
+            card.classList.remove('drag-over-top', 'drag-over-bottom');
+          }
+        });
+
+        card.addEventListener('drop', e => {
+          e.preventDefault();
+          e.stopPropagation();
+          if (!_rdDragId || card.dataset.itemId === _rdDragId) return;
+          const items = state.roadmapItems || [];
+          const fromIdx = items.findIndex(i => i.id === _rdDragId);
+          const toId = card.dataset.itemId;
+          const rect = card.getBoundingClientRect();
+          const insertBefore = e.clientY < rect.top + rect.height / 2;
+          // Move to same phase as target card
+          const targetItem = items.find(i => i.id === toId);
+          items[fromIdx].phase = targetItem.phase;
+          const [moved] = items.splice(fromIdx, 1);
+          let toIdx = items.findIndex(i => i.id === toId);
+          if (!insertBefore) toIdx += 1;
+          items.splice(toIdx, 0, moved);
+          saveState();
+          renderRoadmap();
         });
       });
 
-      document.querySelectorAll('.swimlane-col').forEach(col => {
-        col.addEventListener('dragover', e => {
+      // Column drop zones (for dropping onto empty columns or below all cards)
+      document.querySelectorAll('.swimlane-body').forEach(body => {
+        body.addEventListener('dragover', e => {
           if (!_rdDragId) return;
           e.preventDefault();
-          document.querySelectorAll('.swimlane-col').forEach(c => c.classList.remove('drop-target'));
-          col.classList.add('drop-target');
+          _rdClearIndicators();
+          body.classList.add('drop-target-empty');
         });
-        col.addEventListener('dragleave', e => {
-          if (!col.contains(e.relatedTarget)) col.classList.remove('drop-target');
+        body.addEventListener('dragleave', e => {
+          if (!body.contains(e.relatedTarget)) body.classList.remove('drop-target-empty');
         });
-        col.addEventListener('drop', e => {
+        body.addEventListener('drop', e => {
           e.preventDefault();
-          col.classList.remove('drop-target');
+          body.classList.remove('drop-target-empty');
           if (!_rdDragId) return;
-          const newPhase = col.dataset.phase;
+          const newPhase = body.dataset.phase;
           const item = (state.roadmapItems || []).find(i => i.id === _rdDragId);
-          if (item && item.phase !== newPhase) {
+          if (item) {
             item.phase = newPhase;
+            // Move to end of that phase group
+            const items = state.roadmapItems;
+            const idx = items.findIndex(i => i.id === _rdDragId);
+            const [moved] = items.splice(idx, 1);
+            items.push(moved);
             saveState();
             renderRoadmap();
           }
