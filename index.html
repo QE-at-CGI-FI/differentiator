@@ -78,19 +78,27 @@
 
     /* ── Layout ── */
     main {
-      max-width: 760px;
+      max-width: 1060px;
       margin: 0 auto;
       padding: 28px 16px 80px;
     }
 
     /* ── Element Card ── */
+    .element-row {
+      display: flex;
+      align-items: stretch;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
     .element-card {
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 6px;
-      margin-bottom: 12px;
       overflow: hidden;
       border-left: 3px solid var(--cgi-red);
+      flex: 1;
+      min-width: 0;
     }
 
     .element-header {
@@ -287,8 +295,109 @@
     .btn-add-option:hover { opacity: 0.7; }
 
     /* ── Collapsed ── */
-    .collapsed .element-divider,
-    .collapsed .options-section { display: none; }
+    .element-row.collapsed .element-divider,
+    .element-row.collapsed .options-section { display: none; }
+
+    /* ── Questions Panel ── */
+    .questions-panel {
+      width: 240px;
+      flex-shrink: 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      border-left: 3px solid #c8a000;
+      display: flex;
+      flex-direction: column;
+      padding: 12px 12px 10px;
+    }
+
+    .questions-panel-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+      flex-shrink: 0;
+    }
+
+    .question-item {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      margin-bottom: 2px;
+    }
+
+    .question-input {
+      flex: 1;
+      font-size: 12px;
+      color: var(--text-primary);
+      border: none;
+      outline: none;
+      background: transparent;
+      padding: 3px 5px;
+      border-radius: 3px;
+      font-family: inherit;
+      min-width: 0;
+    }
+    .question-input::placeholder { color: var(--text-placeholder); font-style: italic; }
+    .question-input:focus { background: var(--surface-2); }
+
+    .questions-spacer { flex: 1; }
+
+    .btn-add-question {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-muted);
+      padding: 4px 2px;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      font-family: inherit;
+      margin-top: 6px;
+      flex-shrink: 0;
+    }
+    .btn-add-question:hover { color: var(--text-secondary); }
+
+    /* ── Vision ── */
+    .vision-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      border-left: 3px solid var(--cgi-red);
+      padding: 14px 16px;
+      margin-bottom: 20px;
+    }
+
+    .vision-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+
+    .vision-input {
+      width: 100%;
+      font-size: 14px;
+      color: var(--text-primary);
+      border: none;
+      outline: none;
+      background: transparent;
+      resize: none;
+      font-family: inherit;
+      line-height: 1.6;
+      display: block;
+      overflow: hidden;
+      padding: 3px 6px;
+      border-radius: 4px;
+    }
+    .vision-input::placeholder { color: var(--text-placeholder); }
+    .vision-input:focus { background: var(--surface-2); }
 
     /* ── Empty state ── */
     .empty-state {
@@ -344,6 +453,26 @@
       opacity: 1;
       transform: translateX(-50%) translateY(0);
     }
+
+    /* ── Drag and Drop ── */
+    .drag-handle {
+      cursor: grab;
+      color: #cccccc;
+      padding: 2px 5px;
+      font-size: 15px;
+      user-select: none;
+      flex-shrink: 0;
+      line-height: 1;
+      border-radius: 3px;
+    }
+    .drag-handle:hover { color: var(--text-secondary); background: #ebebeb; }
+    .drag-handle:active { cursor: grabbing; }
+    .element-card.dragging { opacity: 0.35; }
+    .option-row.dragging { opacity: 0.35; }
+    .element-row.drag-over-top { box-shadow: 0 -3px 0 0 var(--cgi-red); }
+    .element-row.drag-over-bottom { box-shadow: 0 3px 0 0 var(--cgi-red); }
+    .option-row.drag-over-top { box-shadow: 0 -2px 0 0 var(--cgi-red); }
+    .option-row.drag-over-bottom { box-shadow: 0 2px 0 0 var(--cgi-red); }
   </style>
 </head>
 <body>
@@ -365,12 +494,14 @@
   <script>
     const SAMPLE_DATA = {
       isSample: true,
+      vision: 'CGI becomes the partner of choice by delivering differentiated, client-centric solutions that combine deep domain expertise with cutting-edge technology.',
       elements: [
         {
           id: 'sample-1',
           title: 'Cloud Migration Approach',
           oneliner: 'How we move the client\'s workloads to the cloud',
           collapsed: false,
+          questions: [],
           options: [
             {
               id: 'sample-1-a',
@@ -397,6 +528,7 @@
           title: 'Support & Operations Model',
           oneliner: 'Post-go-live support coverage and escalation paths',
           collapsed: false,
+          questions: [],
           options: [
             {
               id: 'sample-2-a',
@@ -417,6 +549,7 @@
           title: 'Security & Compliance Scope',
           oneliner: 'Level of security hardening and regulatory coverage included',
           collapsed: false,
+          questions: [],
           options: [
             {
               id: 'sample-3-a',
@@ -526,7 +659,7 @@
       if (state.isSample) {
         state = { elements: [] };
       }
-      state.elements.push({ id: uid(), title: '', oneliner: '', options: [], collapsed: false });
+      state.elements.push({ id: uid(), title: '', oneliner: '', questions: [], options: [], collapsed: false });
       saveState();
       render();
       const inputs = document.querySelectorAll('.element-title-input');
@@ -578,7 +711,40 @@
       render();
     }
 
+    function addQuestion(elementId) {
+      const el = state.elements.find(e => e.id === elementId);
+      if (!el) return;
+      if (!el.questions) el.questions = [];
+      el.questions.push('');
+      saveState();
+      render();
+      const row = document.querySelector(`[data-row="${elementId}"]`);
+      if (row) {
+        const inputs = row.querySelectorAll('.question-input');
+        if (inputs.length) inputs[inputs.length - 1].focus();
+      }
+    }
+
+    function deleteQuestion(elementId, idx) {
+      const el = state.elements.find(e => e.id === elementId);
+      if (!el || !el.questions) return;
+      el.questions.splice(idx, 1);
+      saveState();
+      render();
+    }
+
     // ── Input handler (no re-render, just persist) ──
+
+    function bindVisionInput() {
+      const vta = document.querySelector('.vision-input');
+      if (!vta) return;
+      vta.addEventListener('input', () => {
+        state.vision = vta.value;
+        saveState();
+        autoResize(vta);
+      });
+      autoResize(vta);
+    }
 
     function handleInput(e) {
       const t = e.target;
@@ -588,6 +754,15 @@
       if (!elementId || !field) return;
       const el = state.elements.find(e => e.id === elementId);
       if (!el) return;
+      if (field === 'question') {
+        const idx = parseInt(t.dataset.questionIdx, 10);
+        if (!isNaN(idx)) {
+          if (!el.questions) el.questions = [];
+          el.questions[idx] = t.value;
+          saveState();
+        }
+        return;
+      }
       if (optionId) {
         const opt = el.options.find(o => o.id === optionId);
         if (opt) opt[field] = t.value;
@@ -607,22 +782,37 @@
     function render() {
       const app = document.getElementById('app');
 
+      // Vision section (always rendered)
+      let visionHtml = `
+        <div class="vision-section">
+          <div class="vision-label">Vision</div>
+          <textarea
+            class="vision-input"
+            placeholder="Describe the overall vision for this proposal…"
+            rows="2"
+            data-field="vision"
+          >${escHtml(state.vision || '')}</textarea>
+        </div>`;
+
       if (!state.elements.length) {
-        app.innerHTML = `
+        app.innerHTML = visionHtml + `
           <div class="empty-state">
             <div class="empty-icon">◈</div>
             <h2>No offering elements yet</h2>
             <p>Add an element to start building your differentiator</p>
           </div>`;
+        bindVisionInput();
         return;
       }
 
-      app.innerHTML = state.elements.map(el => {
+      app.innerHTML = visionHtml + state.elements.map(el => {
         const strongest = el.options.find(o => o.isStrongest);
         const optCount = el.options.length;
         return `
-        <div class="element-card${el.collapsed ? ' collapsed' : ''}" data-card="${el.id}">
+        <div class="element-row${el.collapsed ? ' collapsed' : ''}" data-row="${el.id}">
+        <div class="element-card" data-card="${el.id}">
           <div class="element-header">
+            <span class="element-drag-handle drag-handle" draggable="true" title="Drag to reorder">⠿</span>
             <input
               type="text"
               class="element-title-input"
@@ -657,8 +847,9 @@
           <div class="options-section">
             <div class="options-label">Options</div>
             ${el.options.map(opt => `
-              <div class="option-row${opt.isStrongest ? ' is-strongest' : ''}">
+              <div class="option-row${opt.isStrongest ? ' is-strongest' : ''}" data-element-id="${el.id}" data-option-id="${opt.id}">
                 <div class="option-row-top">
+                  <span class="option-drag-handle drag-handle" draggable="true" title="Drag to reorder">⠿</span>
                   <input
                     type="text"
                     class="option-title-input"
@@ -687,6 +878,24 @@
             `).join('')}
             <button class="btn-add-option" onclick="addOption('${el.id}')">+ Add option</button>
           </div>
+        </div>
+        <div class="questions-panel">
+          <div class="questions-panel-label">Questions</div>
+          ${(el.questions || []).map((q, i) => `
+            <div class="question-item">
+              <input type="text" class="question-input"
+                placeholder="Driving question…"
+                value="${escAttr(q)}"
+                data-element-id="${el.id}"
+                data-field="question"
+                data-question-idx="${i}"
+              />
+              <button class="btn-icon danger" onclick="deleteQuestion('${el.id}', ${i})" title="Remove">✕</button>
+            </div>
+          `).join('')}
+          <div class="questions-spacer"></div>
+          <button class="btn-add-question" onclick="addQuestion('${el.id}')">+ Add question</button>
+        </div>
         </div>`;
       }).join('');
 
@@ -695,10 +904,159 @@
         el.addEventListener('input', handleInput);
       });
 
+      bindVisionInput();
+
       // Auto-resize textareas
-      document.querySelectorAll('.option-description-input').forEach(ta => {
+      document.querySelectorAll('.option-description-input, .vision-input').forEach(ta => {
         autoResize(ta);
         ta.addEventListener('input', () => autoResize(ta));
+      });
+
+      setupDragAndDrop();
+    }
+
+    // ── Drag and Drop ──
+
+    let _dragType = null;
+    let _dragId = null;
+    let _dragElementId = null;
+
+    function clearDragOverClasses() {
+      document.querySelectorAll('[data-row], .option-row').forEach(el => {
+        el.classList.remove('drag-over-top', 'drag-over-bottom');
+      });
+    }
+
+    function setupDragAndDrop() {
+      // ── Element card drag handles ──
+      document.querySelectorAll('[data-row]').forEach(row => {
+        const card = row.querySelector('.element-card');
+        const handle = card ? card.querySelector('.element-drag-handle') : null;
+        if (!handle) return;
+
+        handle.addEventListener('dragstart', e => {
+          _dragType = 'element';
+          _dragId = row.dataset.row;
+          e.dataTransfer.effectAllowed = 'move';
+          e.dataTransfer.setData('text/plain', _dragId);
+          e.dataTransfer.setDragImage(row, 16, 16);
+          setTimeout(() => card.classList.add('dragging'), 0);
+        });
+
+        handle.addEventListener('dragend', () => {
+          card.classList.remove('dragging');
+          clearDragOverClasses();
+          _dragType = null;
+          _dragId = null;
+        });
+      });
+
+      document.querySelectorAll('[data-row]').forEach(row => {
+        row.addEventListener('dragover', e => {
+          if (_dragType !== 'element') return;
+          if (row.dataset.row === _dragId) return;
+          e.preventDefault();
+          const rect = row.getBoundingClientRect();
+          clearDragOverClasses();
+          if (e.clientY < rect.top + rect.height / 2) {
+            row.classList.add('drag-over-top');
+          } else {
+            row.classList.add('drag-over-bottom');
+          }
+        });
+
+        row.addEventListener('dragleave', e => {
+          if (!row.contains(e.relatedTarget)) {
+            row.classList.remove('drag-over-top', 'drag-over-bottom');
+          }
+        });
+
+        row.addEventListener('drop', e => {
+          e.preventDefault();
+          if (_dragType !== 'element') return;
+          const fromId = _dragId;
+          const toId = row.dataset.row;
+          if (fromId === toId) return;
+          const fromIdx = state.elements.findIndex(el => el.id === fromId);
+          const rect = row.getBoundingClientRect();
+          const insertBefore = e.clientY < rect.top + rect.height / 2;
+          const [moved] = state.elements.splice(fromIdx, 1);
+          let toIdx = state.elements.findIndex(el => el.id === toId);
+          if (!insertBefore) toIdx += 1;
+          state.elements.splice(toIdx, 0, moved);
+          saveState();
+          render();
+        });
+      });
+
+      // ── Option row drag handles ──
+      document.querySelectorAll('.option-row').forEach(row => {
+        const handle = row.querySelector('.option-drag-handle');
+        if (!handle) return;
+
+        handle.addEventListener('dragstart', e => {
+          _dragType = 'option';
+          _dragId = row.dataset.optionId;
+          _dragElementId = row.dataset.elementId;
+          e.dataTransfer.effectAllowed = 'move';
+          e.dataTransfer.setData('text/plain', _dragId);
+          e.dataTransfer.setDragImage(row, 16, 10);
+          e.stopPropagation();
+          setTimeout(() => row.classList.add('dragging'), 0);
+        });
+
+        handle.addEventListener('dragend', () => {
+          row.classList.remove('dragging');
+          clearDragOverClasses();
+          _dragType = null;
+          _dragId = null;
+          _dragElementId = null;
+        });
+      });
+
+      document.querySelectorAll('.option-row').forEach(row => {
+        row.addEventListener('dragover', e => {
+          if (_dragType !== 'option') return;
+          if (row.dataset.elementId !== _dragElementId) return;
+          if (row.dataset.optionId === _dragId) return;
+          e.preventDefault();
+          e.stopPropagation();
+          const rect = row.getBoundingClientRect();
+          const card = document.querySelector(`[data-card="${_dragElementId}"]`);
+          if (card) card.querySelectorAll('.option-row').forEach(r => r.classList.remove('drag-over-top', 'drag-over-bottom'));
+          if (e.clientY < rect.top + rect.height / 2) {
+            row.classList.add('drag-over-top');
+          } else {
+            row.classList.add('drag-over-bottom');
+          }
+        });
+
+        row.addEventListener('dragleave', e => {
+          if (!row.contains(e.relatedTarget)) {
+            row.classList.remove('drag-over-top', 'drag-over-bottom');
+          }
+        });
+
+        row.addEventListener('drop', e => {
+          e.preventDefault();
+          e.stopPropagation();
+          if (_dragType !== 'option') return;
+          if (row.dataset.elementId !== _dragElementId) return;
+          const fromId = _dragId;
+          const toId = row.dataset.optionId;
+          if (fromId === toId) return;
+          const el = state.elements.find(el => el.id === _dragElementId);
+          if (!el) return;
+          const fromIdx = el.options.findIndex(o => o.id === fromId);
+          const rect = row.getBoundingClientRect();
+          const insertBefore = e.clientY < rect.top + rect.height / 2;
+          const [moved] = el.options.splice(fromIdx, 1);
+          let toIdx = el.options.findIndex(o => o.id === toId);
+          if (!insertBefore) toIdx += 1;
+          el.options.splice(toIdx, 0, moved);
+          saveState();
+          render();
+        });
       });
     }
 
