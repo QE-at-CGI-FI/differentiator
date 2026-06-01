@@ -1354,7 +1354,7 @@
       const panel = document.getElementById('roadmap-panel');
       const items = state.roadmapItems || [];
 
-      const phases = [['thisyear', 'This Year'], ['nextyear', 'Next Year'], ['window', 'Within Window'], ['later', 'Later'], ['', 'Unassigned']];
+      const phases = [['thisyear', 'This Year'], ['nextyear', 'Next Year'], ['window', 'Within Window'], ['later', 'Later']];
       const swimHtml = phases.map(([phase, label]) => {
         const phaseItems = items.filter(i => (i.phase || '') === phase);
         const cls = phase || 'unassigned';
