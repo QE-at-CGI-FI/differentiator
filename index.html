@@ -550,12 +550,16 @@
       border: 1px solid var(--border-light);
       border-radius: 5px;
       padding: 10px 12px;
+      cursor: grab;
     }
+    .roadmap-card:active { cursor: grabbing; }
+    .roadmap-card.dragging { opacity: 0.35; }
+    .swimlane-col.drop-target > .swimlane-body { outline: 2px dashed var(--cgi-red); outline-offset: -3px; border-radius: 4px; }
     .roadmap-card-header {
       display: flex;
       align-items: center;
       gap: 4px;
-      margin-bottom: 9px;
+      margin-bottom: 6px;
     }
     .roadmap-card-title-input {
       flex: 1;
@@ -569,10 +573,32 @@
       padding: 2px 5px;
       border-radius: 3px;
       font-family: inherit;
-      line-height: 1.3;
+      line-height: 1.4;
+      resize: none;
+      overflow: hidden;
+      display: block;
     }
     .roadmap-card-title-input::placeholder { color: var(--text-placeholder); font-weight: 400; }
     .roadmap-card-title-input:focus { background: var(--surface); }
+    .roadmap-card-desc-input {
+      width: 100%;
+      font-size: 11px;
+      color: var(--text-secondary);
+      border: none;
+      outline: none;
+      background: transparent;
+      min-width: 0;
+      padding: 2px 5px;
+      border-radius: 3px;
+      font-family: inherit;
+      line-height: 1.45;
+      resize: none;
+      overflow: hidden;
+      display: block;
+      margin-bottom: 7px;
+    }
+    .roadmap-card-desc-input::placeholder { color: var(--text-placeholder); }
+    .roadmap-card-desc-input:focus { background: var(--surface); }
     .btn-add-roadmap-item {
       background: none;
       border: 1px dashed var(--border);
@@ -589,38 +615,19 @@
       margin-top: 2px;
     }
     .btn-add-roadmap-item:hover { color: var(--cgi-red); border-color: var(--cgi-red); }
-    .roadmap-meta-row {
+    .roadmap-effort-row {
       display: flex;
       align-items: center;
       gap: 4px;
-      margin-bottom: 5px;
-      flex-wrap: wrap;
     }
-    .roadmap-meta-label {
+    .roadmap-effort-label {
       font-size: 10px;
       font-weight: 600;
       color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 0.4px;
-      width: 40px;
       flex-shrink: 0;
     }
-    .seg-btn {
-      background: var(--surface);
-      border: 1px solid var(--border-light);
-      border-radius: 3px;
-      font-size: 10px;
-      font-weight: 500;
-      color: var(--text-muted);
-      padding: 2px 6px;
-      cursor: pointer;
-      font-family: inherit;
-      transition: all 0.1s;
-      line-height: 1.5;
-    }
-    .seg-btn:hover { border-color: var(--cgi-red); color: var(--cgi-red); }
-    .seg-btn.active-scope   { background: #444;           color: white; border-color: #444;           }
-    .seg-btn.active-effort  { background: var(--cgi-red); color: white; border-color: var(--cgi-red); }
 
     .effort-input-wrap {
       display: flex;
@@ -1266,7 +1273,7 @@
 
     function addRoadmapItem(phase) {
       if (!state.roadmapItems) state.roadmapItems = [];
-      state.roadmapItems.push({ id: uid(), title: '', scope: '', effort: null, value: null, phase: phase || '' });
+      state.roadmapItems.push({ id: uid(), title: '', description: '', scope: '', effort: null, value: null, phase: phase || '' });
       saveState();
       renderRoadmap();
     }
@@ -1282,15 +1289,12 @@
       if (item) { item.title = val; saveState(); }
     }
 
-    // ── Roadmap field setters ──
-
-    function setPhase(itemId, phase) {
-      const item = (state.roadmapItems || []).find(i => i.id === itemId);
-      if (!item) return;
-      item.phase = (item.phase || '') === phase ? '' : phase;
-      saveState();
-      renderRoadmap();
+    function updateRoadmapItemDesc(id, val) {
+      const item = (state.roadmapItems || []).find(i => i.id === id);
+      if (item) { item.description = val; saveState(); }
     }
+
+    // ── Roadmap field setters ──
 
     function setEffort(itemId, effort) {
       const item = (state.roadmapItems || []).find(i => i.id === itemId);
@@ -1299,51 +1303,18 @@
       saveState();
     }
 
-    function setElementValue(itemId, value) {
-      const item = (state.roadmapItems || []).find(i => i.id === itemId);
-      if (!item) return;
-      item.value = item.value === value ? null : value;
-      saveState();
-      renderRoadmap();
-    }
-
-    function setScope(itemId, scope) {
-      const item = (state.roadmapItems || []).find(i => i.id === itemId);
-      if (!item) return;
-      item.scope = (item.scope || '') === scope ? '' : scope;
-      saveState();
-      renderRoadmap();
-    }
-
     // ── Roadmap card HTML ──
 
     function roadmapCardHtml(item) {
-      const scopeOpts = ['S', 'M', 'L', 'XL'];
-      const phaseOpts = [['thisyear', 'This Year'], ['nextyear', 'Next Year'], ['window', 'Within Window']];
-
-      const scopeHtml = scopeOpts.map(s =>
-        `<button class="seg-btn${(item.scope || '') === s ? ' active-scope' : ''}" onclick="setScope('${item.id}','${s}')">${s}</button>`
-      ).join('');
-
       const effortHtml = `<div class="effort-input-wrap">€<input type="number" class="effort-input" placeholder="0" min="0" step="1000" value="${escAttr(item.effort != null ? String(item.effort) : '')}" oninput="setEffort('${item.id}', this.value === '' ? null : Number(this.value))" /></div>`;
 
-      const valueHtml = [1,2,3,4,5].map(n =>
-        `<button class="seg-btn${item.value === n ? ' active-value' : ''}" onclick="setElementValue('${item.id}',${n})">${n}</button>`
-      ).join('');
-
-      const phaseHtml = phaseOpts.map(([p, label]) =>
-        `<button class="seg-btn${(item.phase || '') === p ? ' active-' + p : ''}" onclick="setPhase('${item.id}','${p}')">${label}</button>`
-      ).join('');
-
-      return `<div class="roadmap-card">
+      return `<div class="roadmap-card" draggable="true" data-item-id="${item.id}">
           <div class="roadmap-card-header">
-            <input type="text" class="roadmap-card-title-input" placeholder="Item title" value="${escAttr(item.title || '')}" oninput="updateRoadmapItemTitle('${item.id}', this.value)" />
+            <textarea class="roadmap-card-title-input" placeholder="Item title" rows="2" oninput="updateRoadmapItemTitle('${item.id}', this.value); this.style.height='auto'; this.style.height=this.scrollHeight+'px'">${escHtml(item.title || '')}</textarea>
             <button class="btn-icon danger" onclick="deleteRoadmapItem('${item.id}')" title="Delete item">✕</button>
           </div>
-          <div class="roadmap-meta-row"><span class="roadmap-meta-label">Scope</span>${scopeHtml}</div>
-          <div class="roadmap-meta-row"><span class="roadmap-meta-label">Effort</span>${effortHtml}</div>
-          <div class="roadmap-meta-row"><span class="roadmap-meta-label">Value</span>${valueHtml}</div>
-          <div class="roadmap-meta-row"><span class="roadmap-meta-label">Phase</span>${phaseHtml}</div>
+          <textarea class="roadmap-card-desc-input" placeholder="Description…" rows="2" oninput="updateRoadmapItemDesc('${item.id}', this.value); this.style.height='auto'; this.style.height=this.scrollHeight+'px'">${escHtml(item.description || '')}</textarea>
+          <div class="roadmap-effort-row"><span class="roadmap-effort-label">Effort</span>${effortHtml}</div>
         </div>`;
     }
 
@@ -1358,9 +1329,9 @@
         const phaseItems = items.filter(i => (i.phase || '') === phase);
         const cls = phase || 'unassigned';
         const cards = phaseItems.map(i => roadmapCardHtml(i)).join('');
-        return `<div class="swimlane-col">
+        return `<div class="swimlane-col" data-phase="${phase}">
           <div class="swimlane-header ${cls}">${label}</div>
-          <div class="swimlane-body">
+          <div class="swimlane-body" data-phase="${phase}">
             ${cards || ''}
             <button class="btn-add-roadmap-item" onclick="addRoadmapItem('${phase}')">+ Add item</button>
           </div>
@@ -1368,6 +1339,56 @@
       }).join('');
 
       panel.innerHTML = `<div class="swimlane">${swimHtml}</div>`;
+      setupRoadmapDragDrop();
+    }
+
+    // ── Roadmap drag and drop ──
+
+    let _rdDragId = null;
+
+    function setupRoadmapDragDrop() {
+      document.querySelectorAll('.roadmap-card').forEach(card => {
+        card.addEventListener('dragstart', e => {
+          // Don't start drag if user is interacting with textarea or input
+          if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON') {
+            e.preventDefault();
+            return;
+          }
+          _rdDragId = card.dataset.itemId;
+          e.dataTransfer.effectAllowed = 'move';
+          e.dataTransfer.setData('text/plain', _rdDragId);
+          setTimeout(() => card.classList.add('dragging'), 0);
+        });
+        card.addEventListener('dragend', () => {
+          card.classList.remove('dragging');
+          document.querySelectorAll('.swimlane-col').forEach(c => c.classList.remove('drop-target'));
+          _rdDragId = null;
+        });
+      });
+
+      document.querySelectorAll('.swimlane-col').forEach(col => {
+        col.addEventListener('dragover', e => {
+          if (!_rdDragId) return;
+          e.preventDefault();
+          document.querySelectorAll('.swimlane-col').forEach(c => c.classList.remove('drop-target'));
+          col.classList.add('drop-target');
+        });
+        col.addEventListener('dragleave', e => {
+          if (!col.contains(e.relatedTarget)) col.classList.remove('drop-target');
+        });
+        col.addEventListener('drop', e => {
+          e.preventDefault();
+          col.classList.remove('drop-target');
+          if (!_rdDragId) return;
+          const newPhase = col.dataset.phase;
+          const item = (state.roadmapItems || []).find(i => i.id === _rdDragId);
+          if (item && item.phase !== newPhase) {
+            item.phase = newPhase;
+            saveState();
+            renderRoadmap();
+          }
+        });
+      });
     }
   </script>
 </body>
