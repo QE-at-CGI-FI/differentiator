@@ -85,9 +85,7 @@
 
     /* ── Element Card ── */
     .element-row {
-      display: flex;
-      align-items: stretch;
-      gap: 12px;
+      display: block;
       margin-bottom: 12px;
     }
 
@@ -296,29 +294,22 @@
 
     /* ── Collapsed ── */
     .element-row.collapsed .element-divider,
-    .element-row.collapsed .options-section { display: none; }
+    .element-row.collapsed .options-section,
+    .element-row.collapsed .questions-section { display: none; }
 
-    /* ── Questions Panel ── */
-    .questions-panel {
-      width: 240px;
-      flex-shrink: 0;
+    /* ── Questions Section ── */
+    .questions-section {
+      padding: 12px 14px;
       background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      border-left: 3px solid #c8a000;
-      display: flex;
-      flex-direction: column;
-      padding: 12px 12px 10px;
     }
 
-    .questions-panel-label {
+    .questions-section-label {
       font-size: 11px;
       font-weight: 600;
-      color: var(--text-muted);
+      color: #c8a000;
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      margin-bottom: 8px;
-      flex-shrink: 0;
+      margin-bottom: 10px;
     }
 
     .question-item {
@@ -678,6 +669,28 @@
     .seg-btn.active-thisyear  { background: #2d8a4e; color: white; border-color: #2d8a4e; }
     .seg-btn.active-nextyear  { background: #1a5bbf; color: white; border-color: #1a5bbf; }
     .seg-btn.active-window    { background: #b85000; color: white; border-color: #b85000; }
+
+    /* ── Print ── */
+    @media print {
+      header, .tab-bar, .btn-add-option, .btn-add-question,
+      .btn-strongest, .btn-icon, .drag-handle, #toast { display: none !important; }
+      body { background: white; }
+      main { padding: 8px; max-width: 100%; }
+      .element-card {
+        border: 1px solid #ccc;
+        border-left: 3px solid #cc0000;
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+      .option-row, .question-item { break-inside: avoid; }
+      input, textarea {
+        border: none !important;
+        background: transparent !important;
+        resize: none !important;
+        padding: 0 !important;
+      }
+      .vision-section { break-after: avoid; }
+    }
   </style>
 </head>
 <body>
@@ -689,6 +702,7 @@
     <div class="header-actions">
       <button class="btn-secondary" onclick="importData()" title="Import from JSON file">↑ Import</button>
       <button class="btn-secondary" onclick="exportData()" title="Export to JSON file">↓ Export</button>
+      <button class="btn-secondary" id="btn-print" onclick="window.print()" title="Print elements page">⎙ Print</button>
       <button class="btn-add-element" onclick="addElement()">+ Add Element</button>
     </div>
   </header>
@@ -1091,23 +1105,23 @@
             `).join('')}
             <button class="btn-add-option" onclick="addOption('${el.id}')">+ Add option</button>
           </div>
-        </div>
-        <div class="questions-panel">
-          <div class="questions-panel-label">Questions</div>
-          ${(el.questions || []).map((q, i) => `
-            <div class="question-item">
-              <textarea class="question-input"
-                placeholder="Driving question…"
-                rows="1"
-                data-element-id="${el.id}"
-                data-field="question"
-                data-question-idx="${i}"
-              >${escHtml(q)}</textarea>
-              <button class="btn-icon danger" onclick="deleteQuestion('${el.id}', ${i})" title="Remove">✕</button>
-            </div>
-          `).join('')}
-          <div class="questions-spacer"></div>
-          <button class="btn-add-question" onclick="addQuestion('${el.id}')">+ Add question</button>
+          <div class="element-divider"></div>
+          <div class="questions-section">
+            <div class="questions-section-label">Questions</div>
+            ${(el.questions || []).map((q, i) => `
+              <div class="question-item">
+                <textarea class="question-input"
+                  placeholder="Driving question…"
+                  rows="1"
+                  data-element-id="${el.id}"
+                  data-field="question"
+                  data-question-idx="${i}"
+                >${escHtml(q)}</textarea>
+                <button class="btn-icon danger" onclick="deleteQuestion('${el.id}', ${i})" title="Remove">✕</button>
+              </div>
+            `).join('')}
+            <button class="btn-add-question" onclick="addQuestion('${el.id}')">+ Add question</button>
+          </div>
         </div>
         </div>`;
       }).join('');
@@ -1288,6 +1302,8 @@
       document.getElementById('roadmap-panel').style.display = tab === 'roadmap' ? '' : 'none';
       const addBtn = document.querySelector('.btn-add-element');
       if (addBtn) addBtn.style.display = tab === 'elements' ? '' : 'none';
+      const printBtn = document.getElementById('btn-print');
+      if (printBtn) printBtn.style.display = tab === 'elements' ? '' : 'none';
       if (tab === 'roadmap') renderRoadmap();
     }
 
