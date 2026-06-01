@@ -516,33 +516,6 @@
       margin-bottom: 14px;
     }
 
-    /* ── Priority Matrix ── */
-    .matrix-container {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 20px 20px 14px;
-      margin-bottom: 28px;
-    }
-    .matrix-svg { width: 100%; height: auto; display: block; }
-    .matrix-legend {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      flex-wrap: wrap;
-      margin-top: 10px;
-      padding-top: 10px;
-      border-top: 1px solid var(--border-light);
-      font-size: 11px;
-      color: var(--text-muted);
-    }
-    .legend-item { display: flex; align-items: center; gap: 5px; }
-    .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-    .legend-dot.now { background: #2d8a4e; }
-    .legend-dot.next { background: #1a5bbf; }
-    .legend-dot.later { background: #b85000; }
-    .legend-dot.unassigned { background: #aaaaaa; }
-
     /* ── Swimlane ── */
     .swimlane {
       display: grid;
@@ -564,9 +537,9 @@
       letter-spacing: 0.5px;
       border-bottom: 1px solid var(--border-light);
     }
-    .swimlane-header.now     { color: #2d8a4e; background: #f0faf3; border-left: 3px solid #2d8a4e; }
-    .swimlane-header.next    { color: #1a5bbf; background: #f0f4ff; border-left: 3px solid #1a5bbf; }
-    .swimlane-header.later   { color: #b85000; background: #fff8f0; border-left: 3px solid #b85000; }
+    .swimlane-header.thisyear  { color: #2d8a4e; background: #f0faf3; border-left: 3px solid #2d8a4e; }
+    .swimlane-header.nextyear  { color: #1a5bbf; background: #f0f4ff; border-left: 3px solid #1a5bbf; }
+    .swimlane-header.window    { color: #b85000; background: #fff8f0; border-left: 3px solid #b85000; }
     .swimlane-header.unassigned { color: var(--text-muted); background: var(--surface-2); border-left: 3px solid var(--border); }
     .swimlane-body { padding: 10px; display: flex; flex-direction: column; gap: 8px; min-height: 60px; }
     .swimlane-empty { font-size: 12px; color: var(--text-placeholder); text-align: center; padding: 16px 8px; font-style: italic; }
@@ -578,13 +551,44 @@
       border-radius: 5px;
       padding: 10px 12px;
     }
-    .roadmap-card-title {
+    .roadmap-card-header {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-bottom: 9px;
+    }
+    .roadmap-card-title-input {
+      flex: 1;
       font-size: 13px;
       font-weight: 600;
       color: var(--text-primary);
-      margin-bottom: 9px;
+      border: none;
+      outline: none;
+      background: transparent;
+      min-width: 0;
+      padding: 2px 5px;
+      border-radius: 3px;
+      font-family: inherit;
       line-height: 1.3;
     }
+    .roadmap-card-title-input::placeholder { color: var(--text-placeholder); font-weight: 400; }
+    .roadmap-card-title-input:focus { background: var(--surface); }
+    .btn-add-roadmap-item {
+      background: none;
+      border: 1px dashed var(--border);
+      border-radius: 4px;
+      cursor: pointer;
+      color: var(--text-muted);
+      font-size: 12px;
+      font-weight: 500;
+      padding: 6px 10px;
+      width: 100%;
+      text-align: left;
+      font-family: inherit;
+      transition: color 0.15s, border-color 0.15s;
+      margin-top: 2px;
+    }
+    .btn-add-roadmap-item:hover { color: var(--cgi-red); border-color: var(--cgi-red); }
     .roadmap-meta-row {
       display: flex;
       align-items: center;
@@ -617,10 +621,34 @@
     .seg-btn:hover { border-color: var(--cgi-red); color: var(--cgi-red); }
     .seg-btn.active-scope   { background: #444;           color: white; border-color: #444;           }
     .seg-btn.active-effort  { background: var(--cgi-red); color: white; border-color: var(--cgi-red); }
+
+    .effort-input-wrap {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      background: var(--surface);
+      border: 1px solid var(--border-light);
+      border-radius: 3px;
+      padding: 1px 6px 1px 4px;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    .effort-input {
+      width: 80px;
+      border: none;
+      outline: none;
+      background: transparent;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-primary);
+      font-family: inherit;
+      padding: 1px 2px;
+    }
+    .effort-input::placeholder { color: var(--text-placeholder); font-weight: 400; }
     .seg-btn.active-value   { background: #1a5bbf;        color: white; border-color: #1a5bbf;        }
-    .seg-btn.active-now     { background: #2d8a4e;        color: white; border-color: #2d8a4e;        }
-    .seg-btn.active-next    { background: #1a5bbf;        color: white; border-color: #1a5bbf;        }
-    .seg-btn.active-later   { background: #b85000;        color: white; border-color: #b85000;        }
+    .seg-btn.active-thisyear  { background: #2d8a4e; color: white; border-color: #2d8a4e; }
+    .seg-btn.active-nextyear  { background: #1a5bbf; color: white; border-color: #1a5bbf; }
+    .seg-btn.active-window    { background: #b85000; color: white; border-color: #b85000; }
   </style>
 </head>
 <body>
@@ -649,6 +677,7 @@
   <script>
     const SAMPLE_DATA = {
       isSample: true,
+      roadmapItems: [],
       vision: 'CGI becomes the partner of choice by delivering differentiated, client-centric solutions that combine deep domain expertise with cutting-edge technology.',
       elements: [
         {
@@ -723,7 +752,7 @@
       ]
     };
 
-    let state = { elements: [] };
+    let state = { elements: [], roadmapItems: [] };
 
     function loadState() {
       try {
@@ -1233,64 +1262,84 @@
       if (tab === 'roadmap') renderRoadmap();
     }
 
+    // ── Roadmap item CRUD ──
+
+    function addRoadmapItem(phase) {
+      if (!state.roadmapItems) state.roadmapItems = [];
+      state.roadmapItems.push({ id: uid(), title: '', scope: '', effort: null, value: null, phase: phase || '' });
+      saveState();
+      renderRoadmap();
+    }
+
+    function deleteRoadmapItem(id) {
+      state.roadmapItems = (state.roadmapItems || []).filter(i => i.id !== id);
+      saveState();
+      renderRoadmap();
+    }
+
+    function updateRoadmapItemTitle(id, val) {
+      const item = (state.roadmapItems || []).find(i => i.id === id);
+      if (item) { item.title = val; saveState(); }
+    }
+
     // ── Roadmap field setters ──
 
-    function setPhase(elementId, phase) {
-      const el = state.elements.find(e => e.id === elementId);
-      if (!el) return;
-      el.phase = (el.phase || '') === phase ? '' : phase;
+    function setPhase(itemId, phase) {
+      const item = (state.roadmapItems || []).find(i => i.id === itemId);
+      if (!item) return;
+      item.phase = (item.phase || '') === phase ? '' : phase;
       saveState();
       renderRoadmap();
     }
 
-    function setEffort(elementId, effort) {
-      const el = state.elements.find(e => e.id === elementId);
-      if (!el) return;
-      el.effort = el.effort === effort ? null : effort;
+    function setEffort(itemId, effort) {
+      const item = (state.roadmapItems || []).find(i => i.id === itemId);
+      if (!item) return;
+      item.effort = effort;
+      saveState();
+    }
+
+    function setElementValue(itemId, value) {
+      const item = (state.roadmapItems || []).find(i => i.id === itemId);
+      if (!item) return;
+      item.value = item.value === value ? null : value;
       saveState();
       renderRoadmap();
     }
 
-    function setElementValue(elementId, value) {
-      const el = state.elements.find(e => e.id === elementId);
-      if (!el) return;
-      el.value = el.value === value ? null : value;
-      saveState();
-      renderRoadmap();
-    }
-
-    function setScope(elementId, scope) {
-      const el = state.elements.find(e => e.id === elementId);
-      if (!el) return;
-      el.scope = (el.scope || '') === scope ? '' : scope;
+    function setScope(itemId, scope) {
+      const item = (state.roadmapItems || []).find(i => i.id === itemId);
+      if (!item) return;
+      item.scope = (item.scope || '') === scope ? '' : scope;
       saveState();
       renderRoadmap();
     }
 
     // ── Roadmap card HTML ──
 
-    function roadmapCardHtml(el) {
+    function roadmapCardHtml(item) {
       const scopeOpts = ['S', 'M', 'L', 'XL'];
-      const phaseOpts = [['now', 'Now'], ['next', 'Next'], ['later', 'Later']];
+      const phaseOpts = [['thisyear', 'This Year'], ['nextyear', 'Next Year'], ['window', 'Within Window']];
 
       const scopeHtml = scopeOpts.map(s =>
-        `<button class="seg-btn${(el.scope || '') === s ? ' active-scope' : ''}" onclick="setScope('${el.id}','${s}')">${s}</button>`
+        `<button class="seg-btn${(item.scope || '') === s ? ' active-scope' : ''}" onclick="setScope('${item.id}','${s}')">${s}</button>`
       ).join('');
 
-      const effortHtml = [1,2,3,4,5].map(n =>
-        `<button class="seg-btn${el.effort === n ? ' active-effort' : ''}" onclick="setEffort('${el.id}',${n})">${n}</button>`
-      ).join('');
+      const effortHtml = `<div class="effort-input-wrap">€<input type="number" class="effort-input" placeholder="0" min="0" step="1000" value="${escAttr(item.effort != null ? String(item.effort) : '')}" oninput="setEffort('${item.id}', this.value === '' ? null : Number(this.value))" /></div>`;
 
       const valueHtml = [1,2,3,4,5].map(n =>
-        `<button class="seg-btn${el.value === n ? ' active-value' : ''}" onclick="setElementValue('${el.id}',${n})">${n}</button>`
+        `<button class="seg-btn${item.value === n ? ' active-value' : ''}" onclick="setElementValue('${item.id}',${n})">${n}</button>`
       ).join('');
 
       const phaseHtml = phaseOpts.map(([p, label]) =>
-        `<button class="seg-btn${(el.phase || '') === p ? ' active-' + p : ''}" onclick="setPhase('${el.id}','${p}')">${label}</button>`
+        `<button class="seg-btn${(item.phase || '') === p ? ' active-' + p : ''}" onclick="setPhase('${item.id}','${p}')">${label}</button>`
       ).join('');
 
       return `<div class="roadmap-card">
-          <div class="roadmap-card-title">${escHtml(el.title || 'Untitled element')}</div>
+          <div class="roadmap-card-header">
+            <input type="text" class="roadmap-card-title-input" placeholder="Item title" value="${escAttr(item.title || '')}" oninput="updateRoadmapItemTitle('${item.id}', this.value)" />
+            <button class="btn-icon danger" onclick="deleteRoadmapItem('${item.id}')" title="Delete item">✕</button>
+          </div>
           <div class="roadmap-meta-row"><span class="roadmap-meta-label">Scope</span>${scopeHtml}</div>
           <div class="roadmap-meta-row"><span class="roadmap-meta-label">Effort</span>${effortHtml}</div>
           <div class="roadmap-meta-row"><span class="roadmap-meta-label">Value</span>${valueHtml}</div>
@@ -1302,84 +1351,23 @@
 
     function renderRoadmap() {
       const panel = document.getElementById('roadmap-panel');
+      const items = state.roadmapItems || [];
 
-      if (!state.elements.length) {
-        panel.innerHTML = `<div class="empty-state"><div class="empty-icon">◈</div><h2>No elements yet</h2><p>Add elements in the Elements tab to start building your roadmap.</p></div>`;
-        return;
-      }
-
-      // Priority Matrix (SVG)
-      const W = 640, H = 380;
-      const PL = 56, PT = 28, PR = 22, PB = 46;
-      const CW = W - PL - PR, CH = H - PT - PB;
-      const MX = PL + CW / 2, MY = PT + CH / 2;
-      const ex  = e => PL + ((e - 1) / 4) * CW;
-      const vy  = v => PT + (1 - (v - 1) / 4) * CH;
-      const scopeR   = { S: 7, M: 10, L: 14, XL: 18, '': 9 };
-      const phaseCol = { now: '#2d8a4e', next: '#1a5bbf', later: '#b85000', '': '#999999' };
-
-      const matrixEls = state.elements.filter(el => el.effort != null && el.value != null);
-
-      const circlesHtml = matrixEls.map(el => {
-        const cx = ex(el.effort), cy = vy(el.value);
-        const r = scopeR[el.scope || ''];
-        const col = phaseCol[el.phase || ''];
-        const lbl = escHtml((el.title || 'Untitled').slice(0, 18));
-        const labelY = cy - r - 5;
-        const textY = labelY < PT + 10 ? cy + r + 12 : labelY;
-        return `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${col}" fill-opacity="0.82" stroke="${col}" stroke-width="1.5"><title>${escHtml(el.title || 'Untitled')} — Effort: ${el.effort}, Value: ${el.value}</title></circle>`
-          + `<text x="${cx}" y="${textY}" text-anchor="middle" font-size="9.5" fill="#555" font-family="-apple-system,BlinkMacSystemFont,sans-serif">${lbl}</text>`;
-      }).join('');
-
-      const svgHtml = `<svg class="matrix-svg" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">
-  <rect x="${PL}" y="${PT}" width="${CW/2}" height="${CH/2}" fill="#eef8f2"/>
-  <rect x="${MX}" y="${PT}" width="${CW/2}" height="${CH/2}" fill="#eff3ff"/>
-  <rect x="${PL}" y="${MY}" width="${CW/2}" height="${CH/2}" fill="#f7f7f7"/>
-  <rect x="${MX}" y="${MY}" width="${CW/2}" height="${CH/2}" fill="#fff7f0"/>
-  <text x="${PL+CW/4}"   y="${PT+16}" text-anchor="middle" font-size="9.5" fill="#2d8a4e" font-weight="700" font-family="-apple-system,sans-serif" letter-spacing="0.5">QUICK WINS</text>
-  <text x="${PL+3*CW/4}" y="${PT+16}" text-anchor="middle" font-size="9.5" fill="#1a5bbf" font-weight="700" font-family="-apple-system,sans-serif" letter-spacing="0.5">STRATEGIC</text>
-  <text x="${PL+CW/4}"   y="${PT+CH-8}" text-anchor="middle" font-size="9.5" fill="#aaa"    font-weight="700" font-family="-apple-system,sans-serif" letter-spacing="0.5">LOW PRIORITY</text>
-  <text x="${PL+3*CW/4}" y="${PT+CH-8}" text-anchor="middle" font-size="9.5" fill="#b85000" font-weight="700" font-family="-apple-system,sans-serif" letter-spacing="0.5">RECONSIDER</text>
-  <rect x="${PL}" y="${PT}" width="${CW}" height="${CH}" fill="none" stroke="#ddd" stroke-width="1"/>
-  <line x1="${MX}" y1="${PT}" x2="${MX}" y2="${PT+CH}" stroke="#ccc" stroke-width="1" stroke-dasharray="4 3"/>
-  <line x1="${PL}" y1="${MY}" x2="${PL+CW}" y2="${MY}" stroke="#ccc" stroke-width="1" stroke-dasharray="4 3"/>
-  <text x="${PL+CW/2}" y="${H-10}" text-anchor="middle" font-size="11" fill="#888" font-family="-apple-system,sans-serif">Effort →</text>
-  <text x="${PL+4}"    y="${H-10}" text-anchor="start"  font-size="9.5" fill="#bbb" font-family="-apple-system,sans-serif">Low</text>
-  <text x="${PL+CW-4}" y="${H-10}" text-anchor="end"    font-size="9.5" fill="#bbb" font-family="-apple-system,sans-serif">High</text>
-  <text x="13" y="${PT+CH/2}" text-anchor="middle" font-size="11" fill="#888" font-family="-apple-system,sans-serif" transform="rotate(-90,13,${PT+CH/2})">Value</text>
-  <text x="${PL-6}" y="${PT+10}" text-anchor="end" font-size="9.5" fill="#bbb" font-family="-apple-system,sans-serif">High</text>
-  <text x="${PL-6}" y="${PT+CH}" text-anchor="end" font-size="9.5" fill="#bbb" font-family="-apple-system,sans-serif">Low</text>
-  ${circlesHtml}
-</svg>`;
-
-      // Swimlane
-      const phaseLabel = { now: 'Now', next: 'Next', later: 'Later', '': 'Unassigned' };
-      const swimHtml = ['now', 'next', 'later', ''].map(phase => {
-        const els = state.elements.filter(el => (el.phase || '') === phase);
+      const phases = [['thisyear', 'This Year'], ['nextyear', 'Next Year'], ['window', 'Within Window'], ['', 'Unassigned']];
+      const swimHtml = phases.map(([phase, label]) => {
+        const phaseItems = items.filter(i => (i.phase || '') === phase);
         const cls = phase || 'unassigned';
-        const body = els.length
-          ? els.map(el => roadmapCardHtml(el)).join('')
-          : `<div class="swimlane-empty">No items</div>`;
-        return `<div class="swimlane-col"><div class="swimlane-header ${cls}">${phaseLabel[phase]}</div><div class="swimlane-body">${body}</div></div>`;
+        const cards = phaseItems.map(i => roadmapCardHtml(i)).join('');
+        return `<div class="swimlane-col">
+          <div class="swimlane-header ${cls}">${label}</div>
+          <div class="swimlane-body">
+            ${cards || ''}
+            <button class="btn-add-roadmap-item" onclick="addRoadmapItem('${phase}')">+ Add item</button>
+          </div>
+        </div>`;
       }).join('');
 
-      panel.innerHTML = `
-        <div class="matrix-container">
-          <div class="roadmap-section-label">Effort × Value Matrix</div>
-          ${matrixEls.length
-            ? svgHtml
-            : `<div style="text-align:center;padding:50px 0 40px;color:var(--text-muted);font-size:13px;">Assign effort and value to items in the swimlane below to plot them here.</div>`
-          }
-          <div class="matrix-legend">
-            <span class="legend-item"><span class="legend-dot now"></span>Now</span>
-            <span class="legend-item"><span class="legend-dot next"></span>Next</span>
-            <span class="legend-item"><span class="legend-dot later"></span>Later</span>
-            <span class="legend-item"><span class="legend-dot unassigned"></span>Unassigned</span>
-            <span style="margin-left:auto">Bubble size = Scope (S / M / L / XL)</span>
-          </div>
-        </div>
-        <div class="roadmap-section-label">Roadmap Phases</div>
-        <div class="swimlane">${swimHtml}</div>`;
+      panel.innerHTML = `<div class="swimlane">${swimHtml}</div>`;
     }
   </script>
 </body>
