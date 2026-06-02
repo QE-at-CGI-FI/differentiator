@@ -620,6 +620,27 @@
     }
     .btn-offer-star:hover { color: #f0a500; }
     .btn-offer-star.active { color: #f0a500; }
+
+    .btn-priority {
+      background: none;
+      border: 1px solid transparent;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 700;
+      line-height: 1;
+      padding: 2px 5px;
+      border-radius: 3px;
+      flex-shrink: 0;
+      color: #cccccc;
+      transition: color 0.15s, background 0.15s, border-color 0.15s;
+      min-width: 22px;
+      text-align: center;
+      font-family: inherit;
+    }
+    .btn-priority:hover { background: #ebebeb; color: var(--text-secondary); border-color: var(--border); }
+    .btn-priority.priority-must  { color: var(--cgi-red); background: #fff0f0; border-color: #f5c0c0; }
+    .btn-priority.priority-should { color: #c88000; background: #fffbea; border-color: #f0dc80; }
+    .btn-priority.priority-could  { color: #888888; background: #f4f4f4; border-color: var(--border); }
     .roadmap-card-desc-input {
       width: 100%;
       font-size: 11px;
@@ -1352,7 +1373,7 @@
 
     function addRoadmapItem(phase) {
       if (!state.roadmapItems) state.roadmapItems = [];
-      state.roadmapItems.push({ id: uid(), title: '', description: '', scope: '', effort: null, value: null, phase: phase || '', offerMade: false });
+      state.roadmapItems.push({ id: uid(), title: '', description: '', scope: '', effort: null, value: null, phase: phase || '', offerMade: false, priority: null });
       saveState();
       renderRoadmap();
     }
@@ -1381,6 +1402,16 @@
       renderRoadmap();
     }
 
+    function togglePriority(id) {
+      const item = (state.roadmapItems || []).find(i => i.id === id);
+      if (!item) return;
+      const cycle = [null, 'must', 'should', 'could'];
+      const idx = cycle.indexOf(item.priority || null);
+      item.priority = cycle[(idx + 1) % cycle.length];
+      saveState();
+      renderRoadmap();
+    }
+
     // ── Roadmap field setters ──
 
     function setEffort(itemId, effort) {
@@ -1395,13 +1426,16 @@
     function roadmapCardHtml(item) {
       const effortHtml = `<div class="effort-input-wrap">€<input type="number" class="effort-input" placeholder="0" min="0" step="1000" value="${escAttr(item.effort != null ? String(item.effort) : '')}" oninput="setEffort('${item.id}', this.value === '' ? null : Number(this.value))" /></div>`;
 
+      const priorityMap = { must: ['M', 'Must – required', 'priority-must'], should: ['S', 'Should – important', 'priority-should'], could: ['C', 'Could – nice to have', 'priority-could'] };
+      const [priLabel, priTitle, priClass] = priorityMap[item.priority] || ['·', 'Set priority (Must / Should / Could)', ''];
+
       return `<div class="roadmap-card${item.offerMade ? ' offer-made' : ''}" draggable="true" data-item-id="${item.id}">
           <div class="roadmap-card-header">
             <textarea class="roadmap-card-title-input" placeholder="Item title" rows="2" oninput="updateRoadmapItemTitle('${item.id}', this.value); this.style.height='auto'; this.style.height=this.scrollHeight+'px'">${escHtml(item.title || '')}</textarea>
             <button class="btn-icon danger" onclick="deleteRoadmapItem('${item.id}')" title="Delete item">✕</button>
           </div>
           <textarea class="roadmap-card-desc-input" placeholder="Description…" rows="2" oninput="updateRoadmapItemDesc('${item.id}', this.value); this.style.height='auto'; this.style.height=this.scrollHeight+'px'">${escHtml(item.description || '')}</textarea>
-          <div class="roadmap-effort-row"><span class="roadmap-effort-label">Effort</span>${effortHtml}<button class="btn-offer-star${item.offerMade ? ' active' : ''}" onclick="toggleOfferMade('${item.id}')" title="${item.offerMade ? 'Offer made' : 'Mark offer made'}">${item.offerMade ? '★' : '☆'}</button></div>
+          <div class="roadmap-effort-row"><span class="roadmap-effort-label">Effort</span>${effortHtml}<button class="btn-offer-star${item.offerMade ? ' active' : ''}" onclick="toggleOfferMade('${item.id}')" title="${item.offerMade ? 'Offer made' : 'Mark offer made'}">${item.offerMade ? '★' : '☆'}</button><button class="btn-priority ${priClass}" onclick="togglePriority('${item.id}')" title="${priTitle}">${priLabel}</button></div>
         </div>`;
     }
 
