@@ -839,7 +839,17 @@
       textarea {
         overflow: visible !important;
         height: auto !important;
+        min-height: unset !important;
       }
+      [data-print-hidden] { display: none !important; }
+      .print-text-replacement {
+        white-space: pre-wrap;
+        word-break: break-word;
+        overflow-wrap: break-word;
+        padding: 0;
+        background: transparent;
+      }
+      .option-row-top { align-items: flex-start; }
       .badge-strongest {
         max-width: none !important;
         overflow: visible !important;
@@ -1784,6 +1794,23 @@
         });
       });
     }
+
+    window.addEventListener('beforeprint', function() {
+      document.querySelectorAll('input[type="text"], textarea').forEach(function(el) {
+        var div = document.createElement('div');
+        div.className = el.className + ' print-text-replacement';
+        div.textContent = el.value;
+        el.parentNode.insertBefore(div, el);
+        el.setAttribute('data-print-hidden', '');
+      });
+    });
+
+    window.addEventListener('afterprint', function() {
+      document.querySelectorAll('.print-text-replacement').forEach(function(el) { el.remove(); });
+      document.querySelectorAll('[data-print-hidden]').forEach(function(el) {
+        el.removeAttribute('data-print-hidden');
+      });
+    });
   </script>
 </body>
 </html>
