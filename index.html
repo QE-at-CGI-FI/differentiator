@@ -718,6 +718,98 @@
     .seg-btn.active-nextyear  { background: #1a5bbf; color: white; border-color: #1a5bbf; }
     .seg-btn.active-window    { background: #b85000; color: white; border-color: #b85000; }
 
+    /* ── Card Modal ── */
+    .card-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.55);
+      z-index: 400;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .card-modal-overlay.hidden { display: none; }
+    .card-modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      border-left: 3px solid var(--cgi-red);
+      width: 100%;
+      max-width: 640px;
+      max-height: 88vh;
+      overflow-y: auto;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+    }
+    .card-modal-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 18px 20px 14px;
+      border-bottom: 1px solid var(--border-light);
+    }
+    .card-modal-title {
+      flex: 1;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-primary);
+      border: none;
+      outline: none;
+      background: transparent;
+      font-family: inherit;
+      resize: none;
+      overflow: hidden;
+      line-height: 1.4;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    .card-modal-title:focus { background: var(--surface-2); }
+    .card-modal-body { padding: 18px 20px 12px; }
+    .card-modal-field-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+    .card-modal-desc {
+      width: 100%;
+      font-size: 14px;
+      color: var(--text-secondary);
+      border: 1px solid var(--border-light);
+      outline: none;
+      background: var(--surface-2);
+      font-family: inherit;
+      line-height: 1.65;
+      resize: vertical;
+      padding: 10px 12px;
+      border-radius: 4px;
+      min-height: 130px;
+    }
+    .card-modal-desc:focus { border-color: var(--border); background: var(--surface); }
+    .card-modal-footer {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 20px 20px;
+      border-top: 1px solid var(--border-light);
+      flex-wrap: wrap;
+    }
+    .btn-expand-modal {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #cccccc;
+      padding: 3px 5px;
+      border-radius: 4px;
+      font-size: 13px;
+      line-height: 1;
+      flex-shrink: 0;
+      transition: color 0.15s, background 0.15s;
+    }
+    .btn-expand-modal:hover { color: var(--text-secondary); background: #ebebeb; }
+
     /* ── Print ── */
     @media print {
       header, .tab-bar, .btn-add-option, .btn-add-question,
@@ -771,6 +863,26 @@
   </main>
   <div id="toast"></div>
   <input type="file" id="import-input" accept=".json" style="display:none" onchange="handleImportFile(event)" />
+
+  <!-- Card modal -->
+  <div id="card-modal-overlay" class="card-modal-overlay hidden" onclick="handleModalOverlayClick(event)">
+    <div class="card-modal" id="card-modal">
+      <div class="card-modal-header">
+        <textarea id="modal-title" class="card-modal-title" rows="2" placeholder="Item title"></textarea>
+        <button class="btn-icon danger" onclick="closeCardModal()" title="Close">✕</button>
+      </div>
+      <div class="card-modal-body">
+        <div class="card-modal-field-label">Description</div>
+        <textarea id="modal-desc" class="card-modal-desc" rows="6" placeholder="Description…"></textarea>
+      </div>
+      <div class="card-modal-footer">
+        <span class="roadmap-effort-label">Effort</span>
+        <div class="effort-input-wrap">€<input type="number" id="modal-effort" class="effort-input" placeholder="0" min="0" step="1000" style="width:100px" /></div>
+        <button id="modal-offer-star" class="btn-offer-star" title="Mark offer made"></button>
+        <button id="modal-priority" class="btn-priority" title="Set priority"></button>
+      </div>
+    </div>
+  </div>
 
   <script>
     const SAMPLE_DATA = {
