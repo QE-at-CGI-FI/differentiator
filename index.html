@@ -1464,6 +1464,106 @@
     loadState();
     render();
 
+    // ── Card Modal ──
+
+    let _modalItemId = null;
+
+    function _modalUpdatePriBtn(btn, priority) {
+      const priorityMap = {
+        must:   ['M', 'Must – required',          'priority-must'],
+        should: ['S', 'Should – important',       'priority-should'],
+        could:  ['C', 'Could – nice to have',     'priority-could']
+      };
+      const [label, title, cls] = priorityMap[priority] || ['·', 'Set priority (Must / Should / Could)', ''];
+      btn.textContent = label;
+      btn.title = title;
+      btn.className = 'btn-priority ' + cls;
+    }
+
+    function openCardModal(id) {
+      const item = (state.roadmapItems || []).find(i => i.id === id);
+      if (!item) return;
+      _modalItemId = id;
+
+      const titleEl  = document.getElementById('modal-title');
+      const descEl   = document.getElementById('modal-desc');
+      const effortEl = document.getElementById('modal-effort');
+      const offerBtn = document.getElementById('modal-offer-star');
+      const priBtn   = document.getElementById('modal-priority');
+
+      titleEl.value  = item.title || '';
+      descEl.value   = item.description || '';
+      effortEl.value = item.effort != null ? item.effort : '';
+
+      offerBtn.textContent = item.offerMade ? '★' : '☆';
+      offerBtn.classList.toggle('active', !!item.offerMade);
+      offerBtn.title = item.offerMade ? 'Offer made' : 'Mark offer made';
+
+      _modalUpdatePriBtn(priBtn, item.priority);
+
+      document.getElementById('card-modal-overlay').classList.remove('hidden');
+      autoResize(titleEl);
+      autoResize(descEl);
+      descEl.focus();
+      document.addEventListener('keydown', handleModalKeydown);
+    }
+
+    function closeCardModal() {
+      document.getElementById('card-modal-overlay').classList.add('hidden');
+      document.removeEventListener('keydown', handleModalKeydown);
+      if (_modalItemId) {
+        renderRoadmap();
+        _modalItemId = null;
+      }
+    }
+
+    function handleModalOverlayClick(e) {
+      if (e.target === document.getElementById('card-modal-overlay')) closeCardModal();
+    }
+
+    function handleModalKeydown(e) {
+      if (e.key === 'Escape') closeCardModal();
+    }
+
+    document.getElementById('modal-title').addEventListener('input', function() {
+      if (!_modalItemId) return;
+      updateRoadmapItemTitle(_modalItemId, this.value);
+      autoResize(this);
+    });
+
+    document.getElementById('modal-desc').addEventListener('input', function() {
+      if (!_modalItemId) return;
+      updateRoadmapItemDesc(_modalItemId, this.value);
+      autoResize(this);
+    });
+
+    document.getElementById('modal-effort').addEventListener('input', function() {
+      if (!_modalItemId) return;
+      setEffort(_modalItemId, this.value === '' ? null : Number(this.value));
+    });
+
+    document.getElementById('modal-offer-star').addEventListener('click', function() {
+      if (!_modalItemId) return;
+      const item = (state.roadmapItems || []).find(i => i.id === _modalItemId);
+      if (!item) return;
+      item.offerMade = !item.offerMade;
+      saveState();
+      this.textContent = item.offerMade ? '★' : '☆';
+      this.classList.toggle('active', item.offerMade);
+      this.title = item.offerMade ? 'Offer made' : 'Mark offer made';
+    });
+
+    document.getElementById('modal-priority').addEventListener('click', function() {
+      if (!_modalItemId) return;
+      const item = (state.roadmapItems || []).find(i => i.id === _modalItemId);
+      if (!item) return;
+      const cycle = [null, 'must', 'should', 'could'];
+      const idx = cycle.indexOf(item.priority || null);
+      item.priority = cycle[(idx + 1) % cycle.length];
+      saveState();
+      _modalUpdatePriBtn(this, item.priority);
+    });
+
     // ── Tab switching ──
 
     let activeTab = 'elements';
@@ -1544,6 +1644,7 @@
       return `<div class="roadmap-card${item.offerMade ? ' offer-made' : ''}" draggable="true" data-item-id="${item.id}">
           <div class="roadmap-card-header">
             <textarea class="roadmap-card-title-input" placeholder="Item title" rows="2" oninput="updateRoadmapItemTitle('${item.id}', this.value); this.style.height='auto'; this.style.height=this.scrollHeight+'px'">${escHtml(item.title || '')}</textarea>
+            <button class="btn-expand-modal" onclick="openCardModal('${item.id}')" title="Open in modal">⤢</button>
             <button class="btn-icon danger" onclick="deleteRoadmapItem('${item.id}')" title="Delete item">✕</button>
           </div>
           <textarea class="roadmap-card-desc-input" placeholder="Description…" rows="2" oninput="updateRoadmapItemDesc('${item.id}', this.value); this.style.height='auto'; this.style.height=this.scrollHeight+'px'">${escHtml(item.description || '')}</textarea>
