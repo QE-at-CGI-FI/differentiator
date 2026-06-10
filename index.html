@@ -808,8 +808,15 @@
 
     /* ── Print ── */
     @media print {
-      header, .tab-bar, .btn-add-option, .btn-add-question,
-      .btn-strongest, .btn-icon, .drag-handle, #toast { display: none !important; }
+      .tab-bar, .btn-add-option, .btn-add-question,
+      .btn-strongest, .btn-icon, .drag-handle, #toast,
+      .header-actions { display: none !important; }
+      header {
+        background: white !important;
+        position: static;
+        padding: 8px 16px;
+        height: auto;
+      }
       body { background: white; }
       main { padding: 8px; max-width: 100%; }
       .element-row { display: block !important; }
