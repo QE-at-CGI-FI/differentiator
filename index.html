@@ -49,6 +49,13 @@
     }
 
     .header-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: #888888;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+    .confidential-label {
       display: none;
     }
 
@@ -860,6 +867,7 @@
         white-space: normal !important;
       }
       .vision-section { break-after: avoid; }
+      .header-label { display: none !important; }
       .confidential-label {
         display: inline !important;
         font-size: 13px;
@@ -875,7 +883,8 @@
   <header>
     <div class="header-left">
       <img src="image.png" alt="CGI" class="header-logo" />
-      <span class="header-label confidential-label">Confidential</span>
+      <span class="header-label">Differentiator</span>
+      <span class="confidential-label">Confidential</span>
     </div>
     <div class="header-actions">
       <button class="btn-secondary" onclick="importData()" title="Import from JSON file">↑ Import</button>
